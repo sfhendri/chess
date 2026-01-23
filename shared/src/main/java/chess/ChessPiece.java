@@ -2,9 +2,7 @@ package chess;
 
 import chess.AllMoves.*;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -64,7 +62,7 @@ public class ChessPiece {
             case BISHOP -> BishopMoves.getMoves(board, myPosition);
             case KNIGHT -> KnightMoves.getMoves(board, myPosition);
             case ROOK -> RookMoves.getMoves(board, myPosition);
-            case PAWN -> null;
+            case PAWN -> PawnMoves.getMoves(board, myPosition);
         };
     }
 
