@@ -12,11 +12,11 @@ public class BishopMoves implements AllMoves {
     public static HashSet<ChessMove> getMoves(ChessBoard board, ChessPosition currPosition) {
         int column = currPosition.getColumn();
         int row = currPosition.getRow();
-        int[][] moveDirections = {{-1, 1}, {1, 1}, {1, -1}, {-1, -1}};
+        int[][] Bishop_Move_Directions = {{-1, 1}, {1, 1}, {1, -1}, {-1, -1}};
 
         ChessGame.TeamColor team = board.getTeamOfSquare(currPosition);
 
-        return AllMoves.generateDirectionalMoves(board, currPosition, moveDirections, row, column, team);
+        return AllMoves.generateDirectionalMoves(board, currPosition, Bishop_Move_Directions, row, column, team);
 
     }
 }
