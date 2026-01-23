@@ -42,6 +42,13 @@ public class ChessBoard {
         return board[row][col];
     }
 
+    public ChessGame.TeamColor getTeamOfSquare(ChessPosition position) {
+        if (getPiece(position) != null) {
+            return getPiece(position).getTeamColor();
+        }
+        else return null;
+    }
+
     /**
      * Sets the board to the default starting board
      * (How the game of chess normally starts)

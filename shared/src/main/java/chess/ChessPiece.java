@@ -56,19 +56,5 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
 
-        List<ChessMove> all_moves = new ArrayList<>();
-
-        int row = myPosition.getRow();
-        int col = myPosition.getColumn();
-
-        switch (PieceType) {
-
-            //Pawns First
-
-            case PAWN -> {
-                int direction = Your Mom;
-            }
-        }
-
     }
 }
