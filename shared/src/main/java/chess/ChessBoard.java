@@ -1,6 +1,6 @@
 package chess;
 
-import org.junit.jupiter.api.Assertions;
+import java.util.Arrays;
 
 /**
  * A chessboard that can hold and rearrange chess pieces.
@@ -94,4 +94,33 @@ public class ChessBoard {
 
 
     }
+
+    @Override
+    public String toString(){
+            StringBuilder output = new StringBuilder();
+            for (int y = 7; y >= 0; y--) {
+                output.append("|");
+                for (int x = 0; x < 8; x++) {
+                    output.append(board[x][y] != null ? board[x][y].toString() : " ");
+                    output.append("|");
+                }
+                output.append("\n");
+            }
+            return output.toString();
+        }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        ChessBoard that = (ChessBoard) obj;
+        return Arrays.deepEquals(board, that.board);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.deepHashCode(board);
+    }
+
+
 }
