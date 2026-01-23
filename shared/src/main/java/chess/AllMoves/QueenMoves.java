@@ -13,7 +13,7 @@ public class QueenMoves implements AllMoves {
     public static HashSet<ChessMove> getMoves(ChessBoard board, ChessPosition currPosition) {
         int column = currPosition.getColumn();
         int row = currPosition.getRow();
-        int[][] Queen_Move_Directions = {{-1, 1}, {-1, 0}, {-1, -1}, {0, 1}, {-1, 0}, {1, -1}, {1, 0}, {1, 1}};
+        int[][] Queen_Move_Directions = {{-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}, {-1, 0}};
 
         ChessGame.TeamColor team = board.getTeamOfSquare(currPosition);
 

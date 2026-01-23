@@ -12,7 +12,7 @@ public class RookMoves implements AllMoves {
     public static HashSet<ChessMove> getMoves(ChessBoard board, ChessPosition currPosition) {
         int column = currPosition.getColumn();
         int row = currPosition.getRow();
-        int[][] Rook_Move_Directions = {{-1, 0}, {1, 0}, {0, -1}, {0, -1}};
+        int[][] Rook_Move_Directions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
 
         ChessGame.TeamColor team = board.getTeamOfSquare(currPosition);
 
