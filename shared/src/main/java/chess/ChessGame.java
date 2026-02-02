@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Objects;
 
 /**
@@ -57,11 +58,11 @@ public class ChessGame {
             return null;
         }
 
-        if (piece.getTeamColor() != WhoseTurn){
-            return null;
-        }
+        HashSet<ChessMove> Possible_Moves = (HashSet<ChessMove>) board.getPiece(startPosition).pieceMoves(board, startPosition);
+        HashSet<ChessMove> Valid_Moves = HashSet.newHashSet(Possible_Moves.size());
 
-        return piece.pieceMoves(board, startPosition);
+        // TODO: Create Valid_Moves
+        return Valid_Moves;
     }
 
     /**
