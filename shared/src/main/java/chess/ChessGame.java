@@ -61,7 +61,18 @@ public class ChessGame {
         HashSet<ChessMove> Possible_Moves = (HashSet<ChessMove>) board.getPiece(startPosition).pieceMoves(board, startPosition);
         HashSet<ChessMove> Valid_Moves = HashSet.newHashSet(Possible_Moves.size());
 
-        // TODO: Create Valid_Moves
+        for (ChessMove move : Possible_Moves)
+        {
+            ChessPiece Temporary_Piece = board.getPiece(move.getEndPosition());
+            board.addPiece(move.getStartPosition(), null); // Making the previous location of piece null
+            board.addPiece(move.getEndPosition(), piece);
+            if (!isInCheck(piece.getTeamColor()))
+            {
+                Valid_Moves.add(move);
+            }
+            board.addPiece(move.getEndPosition(), Temporary_Piece);
+            board.addPiece(move.getStartPosition(), piece);
+        }
         return Valid_Moves;
     }
 
@@ -108,11 +119,14 @@ public class ChessGame {
     public boolean isInCheck(TeamColor teamColor) {
         ChessPosition King_Position = null;
         // Find the King
-        for (int y = 1; y <= 8; y++)
+        for (int y = 1; y <= 8 && King_Position == null; y++)
         {
-            for (int x = 1; x <=8; x++)
+            for (int x = 1; x <=8 && King_Position == null; x++)
             {
                 ChessPiece piece = board.getPiece(new ChessPosition(y,x));
+                if (piece == null) {
+                    continue;
+                }
                 if (piece.getTeamColor() == teamColor && piece.getPieceType() == ChessPiece.PieceType.KING)
                 {
                     King_Position = new ChessPosition(y,x);
@@ -126,6 +140,9 @@ public class ChessGame {
             for (int x = 1; x <= 8; x++)
             {
                 ChessPiece piece = board.getPiece(new ChessPosition(y,x));
+                if (piece == null || piece.getTeamColor() == teamColor) {
+                    continue;
+                }
                 for (ChessMove enemyMove : piece.pieceMoves(board, new ChessPosition(y,x)))
                 {
                     if (enemyMove.getEndPosition() == King_Position)
@@ -145,7 +162,7 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        return isInStalemate(teamColor) && isInCheck(teamColor);
     }
 
     /**
