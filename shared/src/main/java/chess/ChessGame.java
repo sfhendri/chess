@@ -145,7 +145,7 @@ public class ChessGame {
                 }
                 for (ChessMove enemyMove : piece.pieceMoves(board, new ChessPosition(y,x)))
                 {
-                    if (enemyMove.getEndPosition() == King_Position)
+                    if (enemyMove.getEndPosition().equals(King_Position))
                     {
                         return true;
                     }
@@ -179,7 +179,7 @@ public class ChessGame {
                 ChessPiece Current_Piece = board.getPiece(Current_Position);
                 Collection<ChessMove> moves;
 
-                if (Current_Piece != null && teamColor == Current_Piece.getTeamColor())
+                if (Current_Piece != null && teamColor.equals(Current_Piece.getTeamColor()))
                 {
                     moves = validMoves(Current_Position);
                     if (moves != null && !moves.isEmpty())
@@ -213,16 +213,17 @@ public class ChessGame {
     @Override
     public String toString() {
         return "ChessGame{" +
-                "teamTurn=" + WhoseTurn +
+                "WhoseTurn=" + WhoseTurn +
                 ", board=" + board +
                 '}';
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        ChessGame chessGame = (ChessGame) obj;
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessGame chessGame = (ChessGame) o;
         return WhoseTurn == chessGame.WhoseTurn && Objects.equals(board, chessGame.board);
     }
 
