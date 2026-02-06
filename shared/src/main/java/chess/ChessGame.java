@@ -127,7 +127,7 @@ public class ChessGame {
                 if (piece == null) {
                     continue;
                 }
-                if (piece.getTeamColor() == teamColor && piece.getPieceType() == ChessPiece.PieceType.KING)
+                if (piece.getTeamColor() == teamColor && piece.getPieceType().equals(ChessPiece.PieceType.KING))
                 {
                     King_Position = new ChessPosition(y,x);
                 }
@@ -162,7 +162,25 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        return !isInStalemate(teamColor) && isInCheck(teamColor);
+        if (!isInCheck(teamColor)) {
+            return false;
+        }
+
+        // If the team has ANY valid move, it's not checkmate (Meaning a Piece can be taken)
+        for (int y = 1; y <= 8; y++) {
+            for (int x = 1; x <= 8; x++) {
+                ChessPosition pos = new ChessPosition(y, x);
+                ChessPiece piece = board.getPiece(pos);
+
+                if (piece != null && piece.getTeamColor() == teamColor) {
+                    Collection<ChessMove> moves = validMoves(pos);
+                    if (moves != null && !moves.isEmpty()) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     /**
