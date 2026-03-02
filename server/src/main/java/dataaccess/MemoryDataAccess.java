@@ -21,14 +21,11 @@ public class MemoryDataAccess implements DataAccess {
 
     @Override
     public UserData createUser(UserData user) throws DataAccessException {
-        if (user.username() != null) {
-            if (getUser(user.username()) == null) {
-                users.put(user.username(), user);
-                return user;
-            }
-            throw new DataAccessException("attempt to add duplicate user");
+        if (getUser(user.username()) == null) {
+            users.put(user.username(), user);
+            return user;
         }
-        return null;
+        throw new DataAccessException("attempt to add duplicate user");
     }
 
     @Override
@@ -38,15 +35,12 @@ public class MemoryDataAccess implements DataAccess {
 
     @Override
     public GameData createGame(String gameName) {
-        if (gameName != null) {
-            var gameID = nextID++;
-            var gameData = new GameData(gameID, null, null, gameName, new ChessGame(), GameData.State.UNDECIDED, "Game created");
-            games.put(gameData.gameID(), gameData);
-            gameData.game().getBoard().resetBoard();
-            gameData.game().setTeamTurn(ChessGame.TeamColor.WHITE);
-            return gameData;
-        }
-        return null;
+        var gameID = nextID++;
+        var gameData = new GameData(gameID, null, null, gameName, new ChessGame(), GameData.State.UNDECIDED);
+        games.put(gameData.gameID(), gameData);
+        gameData.game().getBoard().resetBoard();
+        gameData.game().setTeamTurn(ChessGame.TeamColor.WHITE);
+        return gameData;
     }
 
     @Override
@@ -60,12 +54,9 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     @Override
-    public GameData updateGame(GameData game) throws DataAccessException {
-        if (game.gameID() > 0 && game.game() != null && game.state() != null) {
-            games.put(game.gameID(), game);
-            return game;
-        }
-        throw new DataAccessException("Invalid game data");
+    public GameData updateGame(GameData game) {
+        games.put(game.gameID(), game);
+        return game;
     }
 
     @Override
@@ -84,10 +75,4 @@ public class MemoryDataAccess implements DataAccess {
     public void deleteAuth(String authToken) {
         auths.remove(authToken);
     }
-
-
-    public String toString() {
-        return String.format("Memory");
-    }
-
 }

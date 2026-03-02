@@ -1,15 +1,10 @@
 package model;
 
 import chess.ChessGame;
-import chess.ChessMove;
-import chess.InvalidMoveException;
 import com.google.gson.Gson;
 
-import static chess.ChessGame.TeamColor.BLACK;
-import static chess.ChessGame.TeamColor.WHITE;
-
 public record GameData(int gameID, String whiteUsername, String blackUsername, String gameName, ChessGame game,
-                       State state, String description) {
+                       State state) {
 
     public enum State {
         WHITE,
@@ -18,67 +13,24 @@ public record GameData(int gameID, String whiteUsername, String blackUsername, S
         UNDECIDED
     }
 
-    public GameData makeMove(String username, ChessMove move) throws InvalidMoveException {
-        validateTurn(username);
-
-        game.makeMove(move);
-
-        if (game.isInStalemate(WHITE) || game.isInStalemate(BLACK)) {
-            return setState(State.DRAW, "game is a draw");
-        } else if (game.isInCheckmate(WHITE)) {
-            return setState(State.BLACK, String.format("Black player, %s, won!", blackUsername()));
-        } else if (game.isInCheckmate(BLACK)) {
-            return setState(State.WHITE, String.format("White player, %s, won!", whiteUsername()));
-        } else if (game.isInCheck(WHITE)) {
-            return setState(State.UNDECIDED, String.format("White player, %s, is in check!", whiteUsername()));
-        } else if (game.isInCheck(BLACK)) {
-            return setState(State.UNDECIDED, String.format("Black player, %s, is in check!", blackUsername()));
-        }
-
-        return setState(State.UNDECIDED, String.format("%s moved %s. %s's turn.", username, move, game.WhoseTurn));
-    }
-
-    public void validateTurn(String username) throws InvalidMoveException {
-        if (isGameOver()) {
-            throw new InvalidMoveException("game already completed");
-        }
-        if (game.WhoseTurn == BLACK && !username.equals(blackUsername) || game.WhoseTurn == WHITE && !username.equals(whiteUsername)) {
-            throw new InvalidMoveException("not your turn");
-        }
-    }
-
     public boolean isGameOver() {
         return state != State.UNDECIDED;
     }
 
-    public GameData setWhite(String username) {
-        return new GameData(this.gameID, username, this.blackUsername, this.gameName, this.game, this.state, this.description);
+    public GameData setWhite(String userName) {
+        return new GameData(this.gameID, userName, this.blackUsername, this.gameName, this.game, this.state);
     }
 
-    public GameData setBlack(String username) {
-        return new GameData(this.gameID, this.whiteUsername, username, this.gameName, this.game, this.state, this.description);
+    public GameData setBlack(String userName) {
+        return new GameData(this.gameID, this.whiteUsername, userName, this.gameName, this.game, this.state);
     }
 
-    public GameData setState(State state, String description) {
-        return new GameData(this.gameID, this.whiteUsername, this.blackUsername, this.gameName, this.game, state, description);
+    public GameData setState(State state) {
+        return new GameData(this.gameID, this.whiteUsername, this.blackUsername, this.gameName, this.game, state);
     }
 
     @Override
     public String toString() {
         return new Gson().toJson(this);
     }
-
-    public String display() {
-        String format = "%s white:%s black:%s state:%s. desc: %s";
-        return String.format(format, name(gameName), name(whiteUsername), name(blackUsername), state, description);
-
-    }
-
-    private String name(String name) {
-        if (name == null) {
-            return "NONE";
-        }
-        return name;
-    }
-
 }
