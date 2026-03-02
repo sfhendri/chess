@@ -12,8 +12,8 @@ import java.util.Objects;
  */
 public class ChessGame {
 
-    private TeamColor WhoseTurn;
-    private ChessBoard board;
+    public TeamColor WhoseTurn;
+    public ChessBoard board;
 
     public ChessGame() {
         WhoseTurn = TeamColor.WHITE;
