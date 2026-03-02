@@ -1,5 +1,7 @@
 package chess;
 
+import com.google.gson.Gson;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
@@ -234,6 +236,10 @@ public class ChessGame {
      */
     public ChessBoard getBoard() {
         return board;
+    }
+
+    public static ChessGame fromString(String serializedGame) {
+        return new Gson().fromJson(serializedGame, ChessGame.class);
     }
 
     @Override
