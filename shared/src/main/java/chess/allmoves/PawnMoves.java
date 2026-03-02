@@ -1,10 +1,10 @@
-package chess.AllMoves;
+package chess.allmoves;
 
 import chess.*;
 
 import java.util.HashSet;
 
-public class PawnMoves implements AllMoves {
+public class PawnMoves implements allmoves {
 
     public static HashSet<ChessMove> getMoves(ChessBoard board, ChessPosition currPosition) {
         HashSet<ChessMove> moves = HashSet.newHashSet(16); //16 is the max number of moves of a Pawn
@@ -23,19 +23,19 @@ public class PawnMoves implements AllMoves {
         for (ChessPiece.PieceType promotionPiece : promotionPieces) {
             //Add moving forward, if available
             ChessPosition forwardPosition = new ChessPosition(row + moveIncrement, column);
-            if (AllMoves.SquareValid(forwardPosition) && board.getPiece(forwardPosition) == null) {
+            if (allmoves.SquareValid(forwardPosition) && board.getPiece(forwardPosition) == null) {
                 moves.add(new ChessMove(currPosition, forwardPosition, promotionPiece));
             }
             //Add left attack, if available
             ChessPosition leftAttack = new ChessPosition(row + moveIncrement, column-1);
-            if (AllMoves.SquareValid(leftAttack) &&
+            if (allmoves.SquareValid(leftAttack) &&
                     board.getPiece(leftAttack) != null &&
                     board.getTeamOfSquare(leftAttack) != team) {
                 moves.add(new ChessMove(currPosition, leftAttack, promotionPiece));
             }
             //Add right attack, if available
             ChessPosition rightAttack = new ChessPosition(row + moveIncrement, column+1);
-            if (AllMoves.SquareValid(rightAttack) &&
+            if (allmoves.SquareValid(rightAttack) &&
                     board.getPiece(rightAttack) != null &&
                     board.getTeamOfSquare(rightAttack) != team) {
                 moves.add(new ChessMove(currPosition, rightAttack, promotionPiece));
@@ -43,7 +43,7 @@ public class PawnMoves implements AllMoves {
 
             //Add first move double, if available
             ChessPosition doubleForwardPosition = new ChessPosition(row + moveIncrement*2, column);
-            if (AllMoves.SquareValid(doubleForwardPosition) &&
+            if (allmoves.SquareValid(doubleForwardPosition) &&
                     ((team == ChessGame.TeamColor.WHITE && row == 2) || (team == ChessGame.TeamColor.BLACK && row == 7)) &&
                     board.getPiece(doubleForwardPosition) == null &&
                     board.getPiece(forwardPosition) == null) {

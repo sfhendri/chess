@@ -1,15 +1,14 @@
-package chess.AllMoves;
+package chess.allmoves;
 
 import chess.ChessBoard;
-import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPosition;
 
 import java.util.HashSet;
 
-public class KingMoves implements AllMoves {
+public class KingMoves implements allmoves {
     public static HashSet<ChessMove> getMoves(ChessBoard board, ChessPosition currPosition) {
         int[][] King_moves = {{1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}};
-        return AllMoves.generateStaticMoves(currPosition, King_moves, board);
+        return allmoves.generateStaticMoves(currPosition, King_moves, board);
     }
 }

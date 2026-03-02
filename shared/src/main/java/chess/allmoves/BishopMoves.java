@@ -1,4 +1,4 @@
-package chess.AllMoves;
+package chess.allmoves;
 
 import chess.ChessBoard;
 import chess.ChessGame;
@@ -8,7 +8,7 @@ import chess.ChessPosition;
 import java.util.HashSet;
 
 
-public class BishopMoves implements AllMoves {
+public class BishopMoves implements allmoves {
     public static HashSet<ChessMove> getMoves(ChessBoard board, ChessPosition currPosition) {
         int column = currPosition.getColumn();
         int row = currPosition.getRow();
@@ -16,7 +16,7 @@ public class BishopMoves implements AllMoves {
 
         ChessGame.TeamColor team = board.getTeamOfSquare(currPosition);
 
-        return AllMoves.generateDirectionalMoves(board, currPosition, Bishop_Move_Directions, row, column, team);
+        return allmoves.generateDirectionalMoves(board, currPosition, Bishop_Move_Directions, row, column, team);
 
     }
 }

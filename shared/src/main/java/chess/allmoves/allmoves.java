@@ -1,4 +1,4 @@
-package chess.AllMoves;
+package chess.allmoves;
 
 import chess.ChessBoard;
 import chess.ChessGame;
@@ -7,7 +7,7 @@ import chess.ChessPosition;
 
 import java.util.HashSet;
 
-public interface AllMoves {
+public interface allmoves {
 
     static HashSet<ChessMove> getMoves(ChessBoard board, ChessPosition currPosition) {
         return null;
@@ -28,7 +28,7 @@ public interface AllMoves {
         ChessGame.TeamColor team = board.getTeamOfSquare(currPosition);
         for (int[] relativeMove : relativeMoves) {
             ChessPosition possiblePosition = new ChessPosition(row + relativeMove[1], column + relativeMove[0]);
-            if (AllMoves.SquareValid(possiblePosition) && board.getTeamOfSquare(possiblePosition) != team)
+            if (allmoves.SquareValid(possiblePosition) && board.getTeamOfSquare(possiblePosition) != team)
                 moves.add(new ChessMove(currPosition, possiblePosition, null));
         }
         return moves;
@@ -41,7 +41,7 @@ public interface AllMoves {
             int i = 1;
             while (!obstructed) {
                 ChessPosition possiblePosition = new ChessPosition(currY + direction[1]*i, currX + direction[0]*i);
-                if (!AllMoves.SquareValid(possiblePosition)) {
+                if (!allmoves.SquareValid(possiblePosition)) {
                     obstructed = true;
                 }
                 else if (board.getPiece(possiblePosition) == null) {
