@@ -8,7 +8,7 @@ import chess.ChessPosition;
 import java.util.HashSet;
 
 
-public class RookMoves implements allmoves {
+public class RookMoves implements AllMoves {
     public static HashSet<ChessMove> getMoves(ChessBoard board, ChessPosition currPosition) {
         int column = currPosition.getColumn();
         int row = currPosition.getRow();
@@ -16,7 +16,7 @@ public class RookMoves implements allmoves {
 
         ChessGame.TeamColor team = board.getTeamOfSquare(currPosition);
 
-        return allmoves.generateDirectionalMoves(board, currPosition, rookMoveDirections, row, column, team);
+        return AllMoves.generateDirectionalMoves(board, currPosition, rookMoveDirections, row, column, team);
 
     }
 }
