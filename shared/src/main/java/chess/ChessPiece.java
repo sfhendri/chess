@@ -13,11 +13,25 @@ import java.util.Objects;
  */
 public class ChessPiece {
 
-    private final ChessGame.TeamColor Team;
+    private final ChessGame.TeamColor team;
     private final PieceType piece;
 
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessPiece piece1 = (ChessPiece) o;
+        return team == piece1.team && piece == piece1.piece;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(team, piece);
+    }
+
     public ChessPiece(ChessGame.TeamColor pieceColor, PieceType type) {
-        this.Team = pieceColor;
+        this.team = pieceColor;
         this.piece = type;
     }
 
@@ -38,7 +52,7 @@ public class ChessPiece {
      * @return Which team this chess piece belongs to
      */
     public ChessGame.TeamColor getTeamColor() {
-        return Team;
+        return team;
     }
 
     /**
@@ -69,25 +83,13 @@ public class ChessPiece {
     @Override
     public String toString() {
         return switch (piece) {
-            case KING -> Team == ChessGame.TeamColor.WHITE ? "K" : "k";
-            case QUEEN -> Team == ChessGame.TeamColor.WHITE ? "Q" : "q";
-            case BISHOP -> Team == ChessGame.TeamColor.WHITE ? "B" : "b";
-            case KNIGHT -> Team == ChessGame.TeamColor.WHITE ? "N" : "n";
-            case ROOK -> Team == ChessGame.TeamColor.WHITE ? "R" : "r";
-            case PAWN -> Team == ChessGame.TeamColor.WHITE ? "P" : "p";
+            case KING -> team == ChessGame.TeamColor.WHITE ? "K" : "k";
+            case QUEEN -> team == ChessGame.TeamColor.WHITE ? "Q" : "q";
+            case BISHOP -> team == ChessGame.TeamColor.WHITE ? "B" : "b";
+            case KNIGHT -> team == ChessGame.TeamColor.WHITE ? "N" : "n";
+            case ROOK -> team == ChessGame.TeamColor.WHITE ? "R" : "r";
+            case PAWN -> team == ChessGame.TeamColor.WHITE ? "P" : "p";
         };
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ChessPiece that = (ChessPiece) o;
-        return Team == that.Team && piece == that.piece;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(Team, piece);
-    }
 }

@@ -17,25 +17,28 @@ public class PawnMoves implements allmoves {
 
         boolean promote = (team == ChessGame.TeamColor.WHITE && row == 7) || (team == ChessGame.TeamColor.BLACK && row == 2);
         if (promote) {
-            promotionPieces = new ChessPiece.PieceType[]{ChessPiece.PieceType.ROOK, ChessPiece.PieceType.KNIGHT, ChessPiece.PieceType.BISHOP, ChessPiece.PieceType.QUEEN};
+            promotionPieces = new ChessPiece.PieceType[]{ChessPiece.PieceType.ROOK,
+                    ChessPiece.PieceType.KNIGHT,
+                    ChessPiece.PieceType.BISHOP,
+                    ChessPiece.PieceType.QUEEN};
         }
 
         for (ChessPiece.PieceType promotionPiece : promotionPieces) {
             //Add moving forward, if available
             ChessPosition forwardPosition = new ChessPosition(row + moveIncrement, column);
-            if (allmoves.SquareValid(forwardPosition) && board.getPiece(forwardPosition) == null) {
+            if (allmoves.squarevalid(forwardPosition) && board.getPiece(forwardPosition) == null) {
                 moves.add(new ChessMove(currPosition, forwardPosition, promotionPiece));
             }
             //Add left attack, if available
             ChessPosition leftAttack = new ChessPosition(row + moveIncrement, column-1);
-            if (allmoves.SquareValid(leftAttack) &&
+            if (allmoves.squarevalid(leftAttack) &&
                     board.getPiece(leftAttack) != null &&
                     board.getTeamOfSquare(leftAttack) != team) {
                 moves.add(new ChessMove(currPosition, leftAttack, promotionPiece));
             }
             //Add right attack, if available
             ChessPosition rightAttack = new ChessPosition(row + moveIncrement, column+1);
-            if (allmoves.SquareValid(rightAttack) &&
+            if (allmoves.squarevalid(rightAttack) &&
                     board.getPiece(rightAttack) != null &&
                     board.getTeamOfSquare(rightAttack) != team) {
                 moves.add(new ChessMove(currPosition, rightAttack, promotionPiece));
@@ -43,7 +46,7 @@ public class PawnMoves implements allmoves {
 
             //Add first move double, if available
             ChessPosition doubleForwardPosition = new ChessPosition(row + moveIncrement*2, column);
-            if (allmoves.SquareValid(doubleForwardPosition) &&
+            if (allmoves.squarevalid(doubleForwardPosition) &&
                     ((team == ChessGame.TeamColor.WHITE && row == 2) || (team == ChessGame.TeamColor.BLACK && row == 7)) &&
                     board.getPiece(doubleForwardPosition) == null &&
                     board.getPiece(forwardPosition) == null) {

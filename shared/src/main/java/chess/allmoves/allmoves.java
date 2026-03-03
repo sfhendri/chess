@@ -13,7 +13,7 @@ public interface allmoves {
         return null;
     }
 
-    static boolean SquareValid(ChessPosition position) {
+    static boolean squarevalid(ChessPosition position) {
         return (position.getRow() >= 1 && position.getRow() <= 8) &&
                 (position.getColumn() >= 1 && position.getColumn() <= 8);
     }
@@ -28,20 +28,22 @@ public interface allmoves {
         ChessGame.TeamColor team = board.getTeamOfSquare(currPosition);
         for (int[] relativeMove : relativeMoves) {
             ChessPosition possiblePosition = new ChessPosition(row + relativeMove[1], column + relativeMove[0]);
-            if (allmoves.SquareValid(possiblePosition) && board.getTeamOfSquare(possiblePosition) != team)
+            if (allmoves.squarevalid(possiblePosition) && board.getTeamOfSquare(possiblePosition) != team) {
                 moves.add(new ChessMove(currPosition, possiblePosition, null));
+            }
         }
         return moves;
     }
 
-    static HashSet<ChessMove> generateDirectionalMoves(ChessBoard board, ChessPosition currPosition, int[][] moveDirections, int currY, int currX, ChessGame.TeamColor team) {
+    static HashSet<ChessMove> generateDirectionalMoves(ChessBoard board, ChessPosition currPosition,
+                                                       int[][] moveDirections, int currY, int currX, ChessGame.TeamColor team) {
         HashSet<ChessMove> moves = HashSet.newHashSet(27); //We use 27 because a queen can have 27 moves
         for (int[] direction : moveDirections) {
             boolean obstructed = false;
             int i = 1;
             while (!obstructed) {
                 ChessPosition possiblePosition = new ChessPosition(currY + direction[1]*i, currX + direction[0]*i);
-                if (!allmoves.SquareValid(possiblePosition)) {
+                if (!allmoves.squarevalid(possiblePosition)) {
                     obstructed = true;
                 }
                 else if (board.getPiece(possiblePosition) == null) {
