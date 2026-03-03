@@ -1,6 +1,6 @@
 package server;
 
-import chess.ChessGame;
+import chess.*;
 import com.google.gson.Gson;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
