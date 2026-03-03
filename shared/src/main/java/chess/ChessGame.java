@@ -204,10 +204,10 @@ public class ChessGame {
         for (int y = 1; y <=8; y++){
             for (int x = 1; x <= 8; x++) {
                 ChessPosition currentPosition = new ChessPosition(y,x);
-                ChessPiece Current_Piece = board.getPiece(currentPosition);
+                ChessPiece currentPiece = board.getPiece(currentPosition);
                 Collection<ChessMove> moves;
 
-                if (Current_Piece != null && teamColor.equals(Current_Piece.getTeamColor()))
+                if (currentPiece != null && teamColor.equals(currentPiece.getTeamColor()))
                 {
                     moves = validMoves(currentPosition);
                     if (moves != null && !moves.isEmpty())

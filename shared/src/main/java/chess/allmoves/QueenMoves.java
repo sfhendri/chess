@@ -9,7 +9,7 @@ import chess.ChessPosition;
 import java.util.HashSet;
 
 
-public class QueenMoves implements allmoves {
+public class QueenMoves implements AllMoves {
     public static HashSet<ChessMove> getMoves(ChessBoard board, ChessPosition currPosition) {
         int column = currPosition.getColumn();
         int row = currPosition.getRow();
@@ -17,7 +17,7 @@ public class QueenMoves implements allmoves {
 
         ChessGame.TeamColor team = board.getTeamOfSquare(currPosition);
 
-        return allmoves.generateDirectionalMoves(board, currPosition, queenMoveDirections, row, column, team);
+        return AllMoves.generateDirectionalMoves(board, currPosition, queenMoveDirections, row, column, team);
 
     }
 }

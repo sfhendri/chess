@@ -4,7 +4,7 @@ import chess.*;
 
 import java.util.HashSet;
 
-public class PawnMoves implements allmoves {
+public class PawnMoves implements AllMoves {
 
     public static HashSet<ChessMove> getMoves(ChessBoard board, ChessPosition currPosition) {
         HashSet<ChessMove> moves = HashSet.newHashSet(16); //16 is the max number of moves of a Pawn
@@ -26,19 +26,19 @@ public class PawnMoves implements allmoves {
         for (ChessPiece.PieceType promotionPiece : promotionPieces) {
             //Add moving forward, if available
             ChessPosition forwardPosition = new ChessPosition(row + moveIncrement, column);
-            if (allmoves.squarevalid(forwardPosition) && board.getPiece(forwardPosition) == null) {
+            if (AllMoves.squarevalid(forwardPosition) && board.getPiece(forwardPosition) == null) {
                 moves.add(new ChessMove(currPosition, forwardPosition, promotionPiece));
             }
             //Add left attack, if available
             ChessPosition leftAttack = new ChessPosition(row + moveIncrement, column-1);
-            if (allmoves.squarevalid(leftAttack) &&
+            if (AllMoves.squarevalid(leftAttack) &&
                     board.getPiece(leftAttack) != null &&
                     board.getTeamOfSquare(leftAttack) != team) {
                 moves.add(new ChessMove(currPosition, leftAttack, promotionPiece));
             }
             //Add right attack, if available
             ChessPosition rightAttack = new ChessPosition(row + moveIncrement, column+1);
-            if (allmoves.squarevalid(rightAttack) &&
+            if (AllMoves.squarevalid(rightAttack) &&
                     board.getPiece(rightAttack) != null &&
                     board.getTeamOfSquare(rightAttack) != team) {
                 moves.add(new ChessMove(currPosition, rightAttack, promotionPiece));
@@ -46,7 +46,7 @@ public class PawnMoves implements allmoves {
 
             //Add first move double, if available
             ChessPosition doubleForwardPosition = new ChessPosition(row + moveIncrement*2, column);
-            if (allmoves.squarevalid(doubleForwardPosition) &&
+            if (AllMoves.squarevalid(doubleForwardPosition) &&
                     ((team == ChessGame.TeamColor.WHITE && row == 2) || (team == ChessGame.TeamColor.BLACK && row == 7)) &&
                     board.getPiece(doubleForwardPosition) == null &&
                     board.getPiece(forwardPosition) == null) {
