@@ -1,6 +1,7 @@
+import dataaccess.DataAccessException;
 import server.Server;
 
-public class ServerMain {
+public class Main {
     public static void main(String[] args) {
         try {
             Server server = new Server();

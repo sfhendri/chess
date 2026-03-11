@@ -242,7 +242,6 @@ public class MySqlDataAccess implements DataAccess {
         }
     }
 
-
     public String toString() {
         return String.format("MySQL - %s", DatabaseManager.dbName());
     }

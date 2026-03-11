@@ -239,17 +239,6 @@ public class ChessGame {
         return board;
     }
 
-    public static ChessGame fromString(String serializedGame) {
-        return new Gson().fromJson(serializedGame, ChessGame.class);
-    }
-    
-    @Override
-    public String toString() {
-        return "ChessGame{" +
-                "whoseturn=" + whoseturn +
-                ", board=" + board +
-                '}';
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -264,4 +253,5 @@ public class ChessGame {
     public int hashCode() {
         return Objects.hash(whoseturn, board);
     }
+
 }
