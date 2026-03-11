@@ -237,6 +237,10 @@ public class ChessGame {
     public ChessBoard getBoard() {
         return board;
     }
+
+    public static ChessGame fromString(String serializedGame) {
+        return new Gson().fromJson(serializedGame, ChessGame.class);
+    }
     
     @Override
     public String toString() {
