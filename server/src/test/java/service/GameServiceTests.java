@@ -4,14 +4,10 @@ import chess.ChessGame;
 import dataaccess.DataAccess;
 import dataaccess.DbTests;
 import model.GameData;
-import model.UserData;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Collection;
-
-import static utilities.StringUtilities.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -19,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class GameServiceTests extends DbTests {
     @ParameterizedTest(name = "{0}")
     @MethodSource("dataAccessImplementations")
-    public void CreateGame(DataAccess dataAccess) throws Exception {
+    public void createGame(DataAccess dataAccess) throws Exception {
         var userService = new UserService(dataAccess);
         var authData = userService.registerUser(randomUser());
 
@@ -31,7 +27,7 @@ public class GameServiceTests extends DbTests {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("dataAccessImplementations")
-    public void CreateGameBadAuthToken(DataAccess dataAccess) {
+    public void createGameBadAuthToken(DataAccess dataAccess) {
         var gameService = new GameService(dataAccess);
         assertThrows(CodedException.class, () -> gameService.createGame("bogusToken", "testGame"));
     }
@@ -39,7 +35,7 @@ public class GameServiceTests extends DbTests {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("dataAccessImplementations")
-    public void ListGames(DataAccess dataAccess) throws Exception {
+    public void listGames(DataAccess dataAccess) throws Exception {
         var userService = new UserService(dataAccess);
         var authData = userService.registerUser(randomUser());
 
@@ -58,7 +54,7 @@ public class GameServiceTests extends DbTests {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("dataAccessImplementations")
-    public void ListGamesBadAuthToken(DataAccess dataAccess) {
+    public void listGamesBadAuthToken(DataAccess dataAccess) {
         var gameService = new GameService(dataAccess);
         assertThrows(CodedException.class, () -> gameService.listGames("bogusToken"));
     }
@@ -66,7 +62,7 @@ public class GameServiceTests extends DbTests {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("dataAccessImplementations")
-    public void JoinGame(DataAccess dataAccess) throws Exception {
+    public void joinGame(DataAccess dataAccess) throws Exception {
         var userService = new UserService(dataAccess);
         var authData = userService.registerUser(randomUser());
 
@@ -85,7 +81,7 @@ public class GameServiceTests extends DbTests {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("dataAccessImplementations")
-    public void JoinGameBadAuthToken(DataAccess dataAccess) {
+    public void joinGameBadAuthToken(DataAccess dataAccess) {
         var gameService = new GameService(dataAccess);
         assertThrows(CodedException.class, () -> gameService.joinGame("bogusToken", ChessGame.TeamColor.WHITE, 1));
     }
