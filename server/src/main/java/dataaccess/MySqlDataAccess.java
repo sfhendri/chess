@@ -216,29 +216,37 @@ public class MySqlDataAccess implements DataAccess {
     }
 
     private int executeUpdate(String statement, Object... params) throws DataAccessException {
-        try (var conn = DatabaseManager.getConnection()) {
-            try (var preparedStatement = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
-                for (var i = 0; i < params.length; i++) {
-                    var param = params[i];
-                    switch (param) { case String s -> preparedStatement.setString(i + 1, s);
-                        case Integer x -> preparedStatement.setInt(i + 1, x);
-                        case null -> preparedStatement.setNull(i + 1, NULL); default -> {
-                        }
-                    }
-                }
-                preparedStatement.executeUpdate();
+        try (var conn = DatabaseManager.getConnection();
+             var preparedStatement = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
 
-                var rs = preparedStatement.getGeneratedKeys();
-                if (rs.next()) {
-                    return rs.getInt(1);
-                }
-
-                return 0;
+            for (int i = 0; i < params.length; i++) {
+                setPreparedStatementParam(preparedStatement, i + 1, params[i]);
             }
+
+            preparedStatement.executeUpdate();
+
+            var rs = preparedStatement.getGeneratedKeys();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+            return 0;
+
         } catch (SQLIntegrityConstraintViolationException ex) {
             throw new DataAccessException(403, ex.getMessage(), ex);
         } catch (SQLException ex) {
             throw new DataAccessException(String.format("executeUpdate error: %s, %s", statement, ex.getMessage()), ex);
+        }
+    }
+
+    private void setPreparedStatementParam(java.sql.PreparedStatement ps, int index, Object param) throws SQLException {
+        if (param instanceof String s) {
+            ps.setString(index, s);
+        } else if (param instanceof Integer x) {
+            ps.setInt(index, x);
+        } else if (param == null) {
+            ps.setNull(index, NULL);
+        } else {
+            throw new SQLException("Unsupported parameter type: " + param.getClass());
         }
     }
 
