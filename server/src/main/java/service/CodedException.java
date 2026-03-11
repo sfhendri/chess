@@ -8,10 +8,12 @@ public class CodedException extends Exception {
         this.statusCode = statusCode;
     }
 
+
     public CodedException(int statusCode, String message, Exception cause) {
         super(message, cause);
         this.statusCode = statusCode;
     }
+
 
     @Override
     public String toString() {
