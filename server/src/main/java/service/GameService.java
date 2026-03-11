@@ -1,6 +1,7 @@
 package service;
 
 import chess.ChessGame;
+import chess.*;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 import model.*;
