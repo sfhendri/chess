@@ -254,4 +254,13 @@ public class ChessGame {
         return Objects.hash(whoseturn, board);
     }
 
+    public static ChessGame fromString(String serializedGame) {
+        return new Gson().fromJson(serializedGame, ChessGame.class);
+    }
+
+    @Override
+    public String toString() {
+        return new Gson().toJson(this);
+    }
 }
+
