@@ -42,7 +42,7 @@ public class DataAccessTests extends DbTests {
     public void writeReadGame(DataAccess dataAccess) throws Exception {
 
         var game = dataAccess.createGame("blitz");
-        var updatedGame = game.setBlack("joe");
+        var updatedGame = game.setBlack("Billy");
         dataAccess.updateGame(updatedGame);
 
         var retrievedGame = dataAccess.getGame(game.gameID());
