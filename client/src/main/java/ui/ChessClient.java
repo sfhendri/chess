@@ -12,4 +12,5 @@ import java.util.*;
 import static ui.EscapeSequences.*;
 
 public class ChessClient {
+
 }
