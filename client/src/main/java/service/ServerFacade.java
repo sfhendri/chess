@@ -22,6 +22,52 @@ public class ServerFacade {
 
 
 
+    public void clear() throws Exception {
+        this.makeRequest("DELETE", "/db", null, null, Map.class);
+    }
+
+    public AuthData register(String username, String password, String email) throws Exception {
+        var request = Map.of("username", username, "password", password, "email", email);
+        return this.makeRequest("POST", "/user", request, null, AuthData.class);
+    }
+
+    public AuthData login(String username, String password) throws Exception {
+        var request = Map.of("username", username, "password", password);
+        return this.makeRequest("POST", "/session", request, null, AuthData.class);
+    }
+
+    public void logout(String authToken) throws Exception {
+        this.makeRequest("DELETE", "/session", null, authToken, null);
+    }
+
+    public GameData createGame(String authToken, String gameName) throws Exception {
+        var request = Map.of("gameName", gameName);
+        return this.makeRequest("POST", "/game", request, authToken, GameData.class);
+    }
+
+    public GameData[] listGames(String authToken) throws Exception {
+        record Response(GameData[] games) {
+        }
+        var response = this.makeRequest("GET", "/game", null, authToken, Response.class);
+        return (response != null ? response.games : new GameData[0]);
+    }
+
+    public GameData joinGame(String authToken, int gameID, ChessGame.TeamColor color) throws Exception {
+        var request = new JoinGameRequest(color, gameID);
+        this.makeRequest("PUT", "/game", request, authToken, GameData.class);
+        return getGame(authToken, gameID);
+    }
+
+    private GameData getGame(String authToken, int gameID) throws Exception {
+        var games = listGames(authToken);
+        for (var game : games) {
+            if (game.gameID() == gameID) {
+                return game;
+            }
+        }
+        throw new Exception("Missing game");
+    }
+
     private <T> T makeRequest(String method, String path, Object requestBody, String authToken, Class<T> clazz) throws Exception {
         try {
             URI uri = new URI(serverUrl + path);
