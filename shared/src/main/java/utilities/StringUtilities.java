@@ -1,5 +1,6 @@
 package utilities;
 
+import java.util.OptionalInt;
 import java.util.Random;
 
 public final class StringUtilities {
@@ -18,5 +19,13 @@ public final class StringUtilities {
     public static String randomString() {
         long randomNumber = Math.abs(RANDOM.nextLong());
         return Long.toString(randomNumber, 36);
+    }
+
+    public static OptionalInt tryParseInt(String value) {
+        try {
+            return OptionalInt.of(Integer.parseInt(value));
+        } catch (NumberFormatException e) {
+            return OptionalInt.empty();
+        }
     }
 }

@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Objects;
 
 /**
@@ -115,5 +116,9 @@ public class ChessBoard {
         return "ChessBoard{" +
                 "board=" + Arrays.toString(board) +
                 '}';
+    }
+
+    public boolean toString(ChessGame.TeamColor color, Collection<ChessPosition> highlights) {
+        return false;
     }
 }
