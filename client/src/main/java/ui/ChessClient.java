@@ -72,10 +72,10 @@ public class ChessClient {
 
     private String help(String[] params) {
         return switch (userState) {
-            case LOGGED_IN -> getHelp(loggedInHelp);
-            case OBSERVING -> getHelp(ObservingHelp);
+            case LOGGED_IN -> getHelp(LOGGEDINHELP);
+            case OBSERVING -> getHelp(OBSERVINGHELP);
             case BLACK, WHITE -> getHelp(PLAYINGHELP);
-            default -> getHelp(loggedOutHelp);
+            default -> getHelp(LOGGEDOUTHELP);
         };
     }
 
