@@ -20,6 +20,8 @@ public class ServerFacade {
         httpClient = HttpClient.newHttpClient();
     }
 
+
+
     private <T> T makeRequest(String method, String path, Object requestBody, String authToken, Class<T> clazz) throws Exception {
         try {
             URI uri = new URI(serverUrl + path);
