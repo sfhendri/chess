@@ -74,7 +74,7 @@ public class ChessClient {
         return switch (userState) {
             case LOGGED_IN -> getHelp(loggedInHelp);
             case OBSERVING -> getHelp(ObservingHelp);
-            case BLACK, WHITE -> getHelp(playingHelp);
+            case BLACK, WHITE -> getHelp(PLAYINGHELP);
             default -> getHelp(loggedOutHelp);
         };
     }
@@ -140,7 +140,8 @@ public class ChessClient {
             int pos = 1;
             StringBuilder buf = new StringBuilder("Games:\n———————————————————————————————\n");
             for (var game : games) {
-                var gameText = String.format("%d. %s white:%s black:%s state: %s%n", pos, game.gameName(), game.whiteUsername(), game.blackUsername(), game.state());
+                var gameText = String.format("%d. %s white:%s black:%s state: %s%n", pos,
+                        game.gameName(), game.whiteUsername(), game.blackUsername(), game.state());
                 buf.append(gameText);
                 pos++;
             }
@@ -230,14 +231,14 @@ public class ChessClient {
     private record Help(String cmd, String description) {
     }
 
-    static final List<Help> loggedOutHelp = List.of(
+    static final List<Help> LOGGEDOUTHELP = List.of(
             new Help("register <USERNAME> <PASSWORD> <EMAIL>", "to create an account"),
             new Help("login <USERNAME> <PASSWORD>", "to play chess"),
             new Help("quit", "playing chess"),
             new Help("help", "with possible commands")
     );
 
-    static final List<Help> loggedInHelp = List.of(
+    static final List<Help> LOGGEDINHELP = List.of(
             new Help("create <NAME>", "a game"),
             new Help("list", "games"),
             new Help("join <POSITION> [WHITE|BLACK]", "a game"),
@@ -247,7 +248,7 @@ public class ChessClient {
             new Help("help", "with possible commands")
     );
 
-    static final List<Help> ObservingHelp = List.of(
+    static final List<Help> OBSERVINGHELP = List.of(
             new Help("legal", "moves for the current board"),
             new Help("redraw", "the board"),
             new Help("leave", "the game"),
@@ -255,7 +256,7 @@ public class ChessClient {
             new Help("help", "with possible commands")
     );
 
-    static final List<Help> playingHelp = List.of(
+    static final List<Help> PLAYINGHELP = List.of(
             new Help("redraw", "the board"),
             new Help("leave", "the game"),
             new Help("move <crcr> [q|r|b|n]", "a piece with optional promotion"),
@@ -268,7 +269,8 @@ public class ChessClient {
     private String getHelp(List<Help> help) {
         StringBuilder sb = new StringBuilder();
         for (var me : help) {
-            sb.append(String.format("  %s%s%s - %s%s%s\n", SET_TEXT_COLOR_BLUE, me.cmd, RESET_TEXT_COLOR, SET_TEXT_COLOR_MAGENTA, me.description, RESET_TEXT_COLOR));
+            sb.append(String.format("  %s%s%s - %s%s%s\n", SET_TEXT_COLOR_BLUE,
+                    me.cmd, RESET_TEXT_COLOR, SET_TEXT_COLOR_MAGENTA, me.description, RESET_TEXT_COLOR));
         }
         return sb.toString();
 
