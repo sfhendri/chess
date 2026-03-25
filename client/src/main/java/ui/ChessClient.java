@@ -79,12 +79,12 @@ public class ChessClient {
         };
     }
 
-
+    @SuppressWarnings("unused")
     private String quit(String[] params) {
         return "quit";
     }
 
-
+    @SuppressWarnings("unused")
     private String login(String[] params) throws Exception {
         if (userState != State.LOGGED_OUT) {
             return "Must be logged out";
@@ -98,6 +98,7 @@ public class ChessClient {
         return String.format("Logged in as %s", username);
     }
 
+    @SuppressWarnings("unused")
     private String register(String[] params) throws Exception {
         if (userState != State.LOGGED_OUT) {
             return "Must be logged out";
@@ -112,6 +113,7 @@ public class ChessClient {
         return String.format("Logged in as %s", username);
     }
 
+    @SuppressWarnings("unused")
     private String logout(String[] ignore) throws Exception {
         verifyAuth();
 
@@ -121,6 +123,7 @@ public class ChessClient {
         return "Logged out";
     }
 
+    @SuppressWarnings("unused")
     private String create(String[] params) throws Exception {
         verifyAuth();
         var gameName = getStringParam("game name", params, 0);
@@ -130,6 +133,7 @@ public class ChessClient {
         return String.format("Created %s", gameName);
     }
 
+    @SuppressWarnings("unused")
     private String list(String[] params) throws Exception {
         verifyAuth();
 
@@ -151,6 +155,7 @@ public class ChessClient {
         return "No games. Perhaps you would like to create one?";
     }
 
+    @SuppressWarnings("unused")
     private String join(String[] params) throws Exception {
         verifyAuth();
 
@@ -176,6 +181,7 @@ public class ChessClient {
         return String.format("Joined %s as %s", game.gameName(), color);
     }
 
+    @SuppressWarnings("unused")
     private String observe(String[] params) throws Exception {
         verifyAuth();
         var game = getGame(params, 0);
@@ -189,6 +195,7 @@ public class ChessClient {
         return String.format("Joined %d as observer", game.gameID());
     }
 
+    @SuppressWarnings("unused")
     private String redraw(String[] params) throws Exception {
         verifyAuth();
         if (!isPlaying() && !isObserving()) {
@@ -199,6 +206,7 @@ public class ChessClient {
         return "";
     }
 
+    @SuppressWarnings("unused")
     private String legal(String[] params) throws Exception {
         verifyAuth();
         if (!isPlaying() && !isObserving()) {
@@ -209,6 +217,7 @@ public class ChessClient {
         return "";
     }
 
+    @SuppressWarnings("unused")
     private String move(String[] params) throws Exception {
         verifyAuth();
         if (!isPlaying()) {
@@ -218,6 +227,7 @@ public class ChessClient {
         return String.format("move %s", move);
     }
 
+    @SuppressWarnings("unused")
     private String leave(String[] params) throws Exception {
         if (!isPlaying() && !isObserving()) {
             throw new Exception("No game being played");
@@ -228,6 +238,7 @@ public class ChessClient {
         return "Left game";
     }
 
+    @SuppressWarnings("unused")
     private String resign(String[] params) throws Exception {
         if (!isPlaying() && !isObserving()) {
             throw new Exception("No game being played");

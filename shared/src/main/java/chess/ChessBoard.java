@@ -98,13 +98,15 @@ public class ChessBoard {
     }
 
     public boolean toString(ChessGame.TeamColor perspective, Collection<ChessPosition> highlights) {
-        if (board == null) return false;
+        if (board == null) {
+            return false;
+        }
 
-        final String RESET = "\u001B[0m";
-        final String WHITE_BG = "\u001B[47m"; // light square
-        final String BLACK_BG = "\u001B[40m"; // dark square
-        final String RED = "\u001B[31m";      // white pieces in red
-        final String BLUE = "\u001B[34m";     // black pieces in blue
+        final String reset = "\u001B[0m";
+        final String white_bg = "\u001B[47m"; // light square
+        final String black_bg = "\u001B[40m"; // dark square
+        final String red = "\u001B[31m";      // white pieces in red
+        final String blue = "\u001B[34m";     // black pieces in blue
 
         StringBuilder sb = new StringBuilder();
         boolean whitePerspective = perspective == ChessGame.TeamColor.WHITE;
@@ -128,15 +130,15 @@ public class ChessBoard {
 
                 // Bottom-left is dark
                 boolean isLightSquare = (rowIndex + colIndex) % 2 != 0;
-                String bgColor = isLightSquare ? WHITE_BG : BLACK_BG;
+                String bgColor = isLightSquare ? white_bg : black_bg;
 
                 String pieceStr = " "; // empty square
                 if (piece != null) {
-                    pieceStr = (piece.getTeamColor() == ChessGame.TeamColor.WHITE ? RED : BLUE)
+                    pieceStr = (piece.getTeamColor() == ChessGame.TeamColor.WHITE ? red : blue)
                             + piece;
                 }
 
-                sb.append(bgColor).append(" ").append(pieceStr).append(" ").append(RESET);
+                sb.append(bgColor).append(" ").append(pieceStr).append(" ").append(reset);
             }
 
             sb.append(" ").append(rowIndex).append("\n"); // repeat row label
