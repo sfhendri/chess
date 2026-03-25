@@ -21,7 +21,6 @@ public class ServerFacade {
     }
 
 
-
     public void clear() throws Exception {
         this.makeRequest("DELETE", "/db", null, null, Map.class);
     }
@@ -53,6 +52,9 @@ public class ServerFacade {
     }
 
     public GameData joinGame(String authToken, int gameID, ChessGame.TeamColor color) throws Exception {
+        if (color == null) {
+            throw new Exception("Color must be specified");
+        }
         var request = new JoinGameRequest(color, gameID);
         this.makeRequest("PUT", "/game", request, authToken, GameData.class);
         return getGame(authToken, gameID);
