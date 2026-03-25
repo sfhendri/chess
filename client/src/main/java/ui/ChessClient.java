@@ -154,7 +154,8 @@ public class ChessClient {
     private String join(String[] params) throws Exception {
         verifyAuth();
         var game = getGame(params, 0);
-        var color = getColor(params, 1);
+        ChessGame.TeamColor color = getColor(params, 1);
+        this.gameData = server.joinGame(authToken, game.gameID(), color);
         if (isPlaying() || isObserving()) {
             throw new Exception("Already in game");
         }
@@ -339,7 +340,8 @@ public class ChessClient {
     }
 
     private ChessGame.TeamColor getColor(String[] params, int pos) throws Exception {
-        var colorText = getStringParam("color", params, 1).toUpperCase();
+        if (params.length <= pos) return null; // no color specified
+        var colorText = params[pos].toUpperCase();
         if (!colorText.equals("WHITE") && !colorText.equals("BLACK")) {
             throw new Exception("color must be black or white");
         }

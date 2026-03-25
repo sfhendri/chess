@@ -55,7 +55,8 @@ public class ServerFacade {
         if (color == null) {
             throw new Exception("Color must be specified");
         }
-        var request = new JoinGameRequest(color, gameID);
+        String colorStr = (color == null ? null : color.name());
+        var request = new JoinGameRequest(colorStr, gameID);
         this.makeRequest("PUT", "/game", request, authToken, GameData.class);
         return getGame(authToken, gameID);
     }

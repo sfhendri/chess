@@ -99,7 +99,16 @@ public class EndpointManager {
         String authToken = context.header("authorization");
         JoinGameRequest joinGameReq = getBodyObject(context, JoinGameRequest.class);
 
-        GameData game = gameService.joinGame(authToken, joinGameReq.playerColor(), joinGameReq.gameID());
+        String colorStr = joinGameReq.playerColor();
+        if (colorStr == null || colorStr.isEmpty()) {
+            throw new CodedException(400, "Color is required");
+        }
+        if (!colorStr.equals("WHITE") && !colorStr.equals("BLACK")) {
+            throw new CodedException(400, "Color must be WHITE or BLACK");
+        }
+
+        ChessGame.TeamColor color = ChessGame.TeamColor.valueOf(colorStr);
+        GameData game = gameService.joinGame(authToken, color, joinGameReq.gameID());
         context.json(new Gson().toJson(game));
     }
 
