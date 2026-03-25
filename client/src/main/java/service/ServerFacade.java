@@ -52,13 +52,18 @@ public class ServerFacade {
     }
 
     public GameData joinGame(String authToken, int gameID, ChessGame.TeamColor color) throws Exception {
+        // Ensure a color is specified
         if (color == null) {
             throw new Exception("Color must be specified");
         }
-        String colorStr = (color == null ? null : color.name());
-        var request = new JoinGameRequest(colorStr, gameID);
-        this.makeRequest("PUT", "/game", request, authToken, GameData.class);
-        return getGame(authToken, gameID);
+
+        // Create a request using the enum directly (no String conversion needed)
+        JoinGameRequest request = new JoinGameRequest(color, gameID);
+
+        // Send the PUT request to the server and get the updated game data
+
+        // Return the GameData directly — no need to call getGame separately
+        return this.makeRequest("PUT", "/game", request, authToken, GameData.class);
     }
 
     private GameData getGame(String authToken, int gameID) throws Exception {

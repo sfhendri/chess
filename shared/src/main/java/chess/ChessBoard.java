@@ -97,6 +97,63 @@ public class ChessBoard {
 
     }
 
+    public boolean toString(ChessGame.TeamColor perspective, Collection<ChessPosition> highlights) {
+        if (board == null) return false;
+
+        final String RESET = "\u001B[0m";
+        final String WHITE_BG = "\u001B[47m"; // light square
+        final String BLACK_BG = "\u001B[40m"; // dark square
+        final String RED = "\u001B[31m";      // white pieces in red
+        final String BLUE = "\u001B[34m";     // black pieces in blue
+
+        StringBuilder sb = new StringBuilder();
+        boolean whitePerspective = perspective == ChessGame.TeamColor.WHITE;
+
+        // Column headers
+        sb.append("   ");
+        for (int col = 1; col <= 8; col++) {
+            char colLabel = (char) ('a' + (whitePerspective ? col - 1 : 8 - col));
+            sb.append(" ").append(colLabel).append(" ");
+        }
+        sb.append("\n");
+
+        for (int r = 0; r < 8; r++) {
+            int rowIndex = whitePerspective ? 8 - r : r + 1;
+            sb.append(rowIndex).append(" "); // row label
+
+            for (int c = 0; c < 8; c++) {
+                int colIndex = whitePerspective ? c + 1 : 8 - c;
+                ChessPosition pos = new ChessPosition(rowIndex, colIndex);
+                ChessPiece piece = getPiece(pos);
+
+                // Bottom-left is dark
+                boolean isLightSquare = (rowIndex + colIndex) % 2 != 0;
+                String bgColor = isLightSquare ? WHITE_BG : BLACK_BG;
+
+                String pieceStr = " "; // empty square
+                if (piece != null) {
+                    pieceStr = (piece.getTeamColor() == ChessGame.TeamColor.WHITE ? RED : BLUE)
+                            + piece;
+                }
+
+                sb.append(bgColor).append(" ").append(pieceStr).append(" ").append(RESET);
+            }
+
+            sb.append(" ").append(rowIndex).append("\n"); // repeat row label
+        }
+
+        // Column headers again
+        sb.append("   ");
+        for (int col = 1; col <= 8; col++) {
+            char colLabel = (char) ('a' + (whitePerspective ? col - 1 : 8 - col));
+            sb.append(" ").append(colLabel).append(" ");
+        }
+        sb.append("\n");
+
+        System.out.println(sb.toString());
+        return true;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
@@ -111,14 +168,5 @@ public class ChessBoard {
         return Arrays.deepHashCode(board);
     }
 
-    @Override
-    public String toString() {
-        return "ChessBoard{" +
-                "board=" + Arrays.toString(board) +
-                '}';
-    }
 
-    public boolean toString(ChessGame.TeamColor color, Collection<ChessPosition> highlights) {
-        return false;
-    }
 }

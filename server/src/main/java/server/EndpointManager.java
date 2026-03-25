@@ -99,7 +99,7 @@ public class EndpointManager {
         String authToken = context.header("authorization");
         JoinGameRequest joinGameReq = getBodyObject(context, JoinGameRequest.class);
 
-        String colorStr = joinGameReq.playerColor();
+        String colorStr = String.valueOf(joinGameReq.playerColor());
         if (colorStr == null || colorStr.isEmpty()) {
             throw new CodedException(400, "Color is required");
         }

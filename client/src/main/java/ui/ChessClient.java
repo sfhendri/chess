@@ -136,7 +136,7 @@ public class ChessClient {
         var gameList = server.listGames(authToken);
         games = Arrays.stream(gameList).toList();
 
-        if (games.size() > 0) {
+        if (!games.isEmpty()) {
             int pos = 1;
             StringBuilder buf = new StringBuilder("Games:\n———————————————————————————————\n");
             for (var game : games) {
@@ -153,16 +153,26 @@ public class ChessClient {
 
     private String join(String[] params) throws Exception {
         verifyAuth();
+
+        // Get the game from the last listed games
         var game = getGame(params, 0);
-        ChessGame.TeamColor color = getColor(params, 1);
-        this.gameData = server.joinGame(authToken, game.gameID(), color);
+
+        // Get the color the player wants to join as
+        var color = getColor(params, 1);
+
         if (isPlaying() || isObserving()) {
             throw new Exception("Already in game");
         }
 
-        userState = (color == ChessGame.TeamColor.WHITE ? State.WHITE : State.BLACK);
+        // Call the server facade to join the game and store the returned GameData
         this.gameData = server.joinGame(authToken, game.gameID(), color);
+
+        // Set user state based on chosen color
+        userState = (color == ChessGame.TeamColor.WHITE ? State.WHITE : State.BLACK);
+
+        // Immediately draw the board from the perspective of the player
         printGame(color, null);
+
         return String.format("Joined %s as %s", game.gameName(), color);
     }
 
@@ -318,20 +328,20 @@ public class ChessClient {
         return params[pos];
     }
 
-    private int getIntParam(String name, String[] params, int pos) throws Exception {
-        if (params.length <= pos) {
-            throw new Exception(String.format("Missing %s parameter", name));
+    private int getIntParam(String[] params) throws Exception {
+        if (params.length == 0) {
+            throw new Exception(String.format("Missing %s parameter", "game Pos"));
         }
 
-        var result = StringUtilities.tryParseInt(params[pos]);
+        var result = StringUtilities.tryParseInt(params[0]);
         if (result.isEmpty()) {
-            throw new Exception(String.format("Parameter %s is not an int", name));
+            throw new Exception(String.format("Parameter %s is not an int", "game Pos"));
         }
         return result.getAsInt();
     }
 
     private GameData getGame(String[] params, int pos) throws Exception {
-        var gamePos = getIntParam("game Pos", params, 0) - 1;
+        var gamePos = getIntParam(params) - 1;
         if (gamePos >= 0 && gamePos >= games.size()) {
             throw new Exception("invalid game requested");
         }
@@ -340,11 +350,21 @@ public class ChessClient {
     }
 
     private ChessGame.TeamColor getColor(String[] params, int pos) throws Exception {
-        if (params.length <= pos) return null; // no color specified
+        if (params.length <= pos || params[pos] == null || params[pos].isBlank()) {
+            throw new Exception("Missing color parameter (must be WHITE or BLACK)");
+        }
+
         var colorText = params[pos].toUpperCase();
         if (!colorText.equals("WHITE") && !colorText.equals("BLACK")) {
-            throw new Exception("color must be black or white");
+            throw new Exception("Color must be WHITE or BLACK");
         }
         return ChessGame.TeamColor.valueOf(colorText);
     }
+
+    public static void main(String[] args) throws Exception {
+        ChessClient client = new ChessClient();
+        client.run();
+    }
 }
+
+
