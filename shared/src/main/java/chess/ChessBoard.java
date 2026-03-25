@@ -103,8 +103,8 @@ public class ChessBoard {
         }
 
         final String reset = "\u001B[0m";
-        final String white_bg = "\u001B[47m"; // light square
-        final String black_bg = "\u001B[40m"; // dark square
+        final String whitebg = "\u001B[47m"; // light square
+        final String blackbg = "\u001B[40m"; // dark square
         final String red = "\u001B[31m";      // white pieces in red
         final String blue = "\u001B[34m";     // black pieces in blue
 
@@ -130,7 +130,7 @@ public class ChessBoard {
 
                 // Bottom-left is dark
                 boolean isLightSquare = (rowIndex + colIndex) % 2 != 0;
-                String bgColor = isLightSquare ? white_bg : black_bg;
+                String bgColor = isLightSquare ? whitebg : blackbg;
 
                 String pieceStr = " "; // empty square
                 if (piece != null) {
