@@ -21,6 +21,7 @@ public class ChessClient {
 
     public ChessClient() throws Exception {
         server = new ServerFacade("http://localhost:8080");
+        markMethodsUsed();
     }
 
     public void run() {
