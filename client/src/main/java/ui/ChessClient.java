@@ -21,7 +21,6 @@ public class ChessClient {
 
     public ChessClient() throws Exception {
         server = new ServerFacade("http://localhost:8080");
-        markMethodsUsed();
     }
 
     public void run() {
@@ -189,7 +188,7 @@ public class ChessClient {
         this.gameData = new GameData(0, "", "", "", new ChessGame(), GameData.State.UNDECIDED);
         userState = State.OBSERVING;
         printGame();
-        return String.format("Joined %d as observer", game.gameID());
+        return String.format("Joined as observer");
     }
 
 
@@ -348,7 +347,7 @@ public class ChessClient {
 
     private GameData getGame(String[] params, int pos) throws Exception {
         var gamePos = getIntParam(params) - 1;
-        if (gamePos >= 0 && gamePos >= games.size()) {
+        if (gamePos < 0 || gamePos >= games.size()) {
             throw new Exception("invalid game requested");
         }
 
@@ -367,20 +366,6 @@ public class ChessClient {
         return ChessGame.TeamColor.valueOf(colorText);
     }
 
-    @SuppressWarnings("unused")
-    private void markMethodsUsed() throws Exception {
-        // Dummy calls so static analysis sees them being used
-        register(new String[]{});
-        join(new String[]{});
-        list(new String[]{});
-        observe(new String[]{});
-        leave(new String[]{});
-        legal(new String[]{});
-        redraw(new String[]{});
-        resign(new String[]{});
-        move(new String[]{});
-        quit(new String[]{});
-    }
 }
 
 
