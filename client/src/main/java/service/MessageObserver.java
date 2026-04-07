@@ -1,4 +1,9 @@
 package service;
 
-public class MessageObserver {
+import model.GameData;
+
+public interface MessageObserver {
+    void notify(String message);
+
+    void loadGame(GameData game);
 }
