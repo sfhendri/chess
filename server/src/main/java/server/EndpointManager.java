@@ -1,6 +1,5 @@
 package server;
 
-import chess.ChessGame;
 import com.google.gson.Gson;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
@@ -33,6 +32,8 @@ public class EndpointManager {
         javalin.post("/game", this::createGame);
         javalin.get("/game", this::listGames);
         javalin.put("/game", this::joinGame);
+
+        new WebsocketServer(javalin, gameService);
     }
 
 
@@ -98,17 +99,11 @@ public class EndpointManager {
     private void joinGame(Context context) throws CodedException {
         String authToken = context.header("authorization");
         JoinGameRequest joinGameReq = getBodyObject(context, JoinGameRequest.class);
-
-        String colorStr = String.valueOf(joinGameReq.playerColor());
-        if (colorStr == null || colorStr.isEmpty()) {
-            throw new CodedException(400, "Color is required");
-        }
-        if (!colorStr.equals("WHITE") && !colorStr.equals("BLACK")) {
-            throw new CodedException(400, "Color must be WHITE or BLACK");
+        if (joinGameReq.playerColor() == null) {
+            throw new CodedException(400, "bad request");
         }
 
-        ChessGame.TeamColor color = ChessGame.TeamColor.valueOf(colorStr);
-        GameData game = gameService.joinGame(authToken, color, joinGameReq.gameID());
+        GameData game = gameService.joinGame(authToken, joinGameReq.playerColor(), joinGameReq.gameID());
         context.json(new Gson().toJson(game));
     }
 
