@@ -59,14 +59,15 @@ public class MySqlDataAccess implements DataAccess {
         var game = new ChessGame();
         game.board.resetBoard();
         var state = GameData.State.UNDECIDED;
-        var id = executeUpdate("INSERT INTO `game` (gameName, whitePlayerName, blackPlayerName, game, state) VALUES (?, ?, ?, ?, ?)",
+        var ID = executeUpdate("INSERT INTO `game` (gameName, whitePlayerName, blackPlayerName, game, state, description) VALUES (?, ?, ?, ?, ?, ?)",
                 gameName,
                 null,
                 null,
                 game.toString(),
-                state.toString());
-        if (id != 0) {
-            return new GameData(id, null, null, gameName, game, state);
+                state.toString(),
+                "Game created");
+        if (ID != 0) {
+            return new GameData(ID, null, null, gameName, game, state, "Game created");
         }
 
         return null;
@@ -74,8 +75,7 @@ public class MySqlDataAccess implements DataAccess {
 
     public GameData getGame(int gameID) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            try (var preparedStatement = conn.prepareStatement(
-                    "SELECT gameID, gameName, whitePlayerName, blackPlayerName, game, state FROM `game` WHERE gameID=?")) {
+            try (var preparedStatement = conn.prepareStatement("SELECT gameID, gameName, whitePlayerName, blackPlayerName, game, state, description FROM `game` WHERE gameID=?")) {
                 preparedStatement.setInt(1, gameID);
                 try (var rs = preparedStatement.executeQuery()) {
                     if (rs.next()) {
@@ -93,8 +93,7 @@ public class MySqlDataAccess implements DataAccess {
     public Collection<GameData> listGames() throws DataAccessException {
         var result = new ArrayList<GameData>();
         try (var conn = DatabaseManager.getConnection()) {
-            try (var preparedStatement = conn.prepareStatement(
-                    "SELECT gameID, gameName, whitePlayerName, blackPlayerName, game, state FROM `game`")) {
+            try (var preparedStatement = conn.prepareStatement("SELECT gameID, gameName, whitePlayerName, blackPlayerName, game, state, description FROM `game` ORDER BY state DESC")) {
                 try (var rs = preparedStatement.executeQuery()) {
                     while (rs.next()) {
                         var gameData = readGameData(rs);
@@ -110,12 +109,13 @@ public class MySqlDataAccess implements DataAccess {
     }
 
     public GameData updateGame(GameData gameData) throws DataAccessException {
-        executeUpdate("UPDATE `game` set gameName=?, whitePlayerName=?, blackPlayerName=?, game=?, state=? WHERE gameID=?",
+        executeUpdate("UPDATE `game` set gameName=?, whitePlayerName=?, blackPlayerName=?, game=?, state=?, description=? WHERE gameID=?",
                 gameData.gameName(),
                 gameData.whiteUsername(),
                 gameData.blackUsername(),
                 gameData.game().toString(),
                 gameData.state().toString(),
+                gameData.description(),
                 gameData.gameID());
         return gameData;
     }
@@ -156,8 +156,9 @@ public class MySqlDataAccess implements DataAccess {
         var blackPlayerName = rs.getString("blackPlayerName");
         var game = chess.ChessGame.fromString(gs);
         var state = GameData.State.valueOf(rs.getString("state"));
+        var description = rs.getString("description");
 
-        return new GameData(gameID, whitePlayerName, blackPlayerName, gameName, game, state);
+        return new GameData(gameID, whitePlayerName, blackPlayerName, gameName, game, state, description);
     }
 
     private final String[] createStatements = {
@@ -176,6 +177,7 @@ public class MySqlDataAccess implements DataAccess {
               `blackPlayerName` varchar(100) DEFAULT NULL,
               `game` longtext NOT NULL,
               `state` varchar(45) DEFAULT NULL,
+              `description` varchar(256) DEFAULT NULL,
               PRIMARY KEY (`gameID`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """,
@@ -216,37 +218,31 @@ public class MySqlDataAccess implements DataAccess {
     }
 
     private int executeUpdate(String statement, Object... params) throws DataAccessException {
-        try (var conn = DatabaseManager.getConnection();
-             var preparedStatement = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
+                for (var i = 0; i < params.length; i++) {
+                    var param = params[i];
+                    switch (param) {
+                        case String s -> preparedStatement.setString(i + 1, s);
+                        case Integer x -> preparedStatement.setInt(i + 1, x);
+                        case null -> preparedStatement.setNull(i + 1, NULL);
+                        default -> {
+                        }
+                    }
+                }
+                preparedStatement.executeUpdate();
 
-            for (int i = 0; i < params.length; i++) {
-                setPreparedStatementParam(preparedStatement, i + 1, params[i]);
+                var rs = preparedStatement.getGeneratedKeys();
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+
+                return 0;
             }
-
-            preparedStatement.executeUpdate();
-
-            var rs = preparedStatement.getGeneratedKeys();
-            if (rs.next()) {
-                return rs.getInt(1);
-            }
-            return 0;
-
         } catch (SQLIntegrityConstraintViolationException ex) {
             throw new DataAccessException(403, ex.getMessage(), ex);
         } catch (SQLException ex) {
             throw new DataAccessException(String.format("executeUpdate error: %s, %s", statement, ex.getMessage()), ex);
-        }
-    }
-
-    private void setPreparedStatementParam(java.sql.PreparedStatement ps, int index, Object param) throws SQLException {
-        if (param instanceof String s) {
-            ps.setString(index, s);
-        } else if (param instanceof Integer x) {
-            ps.setInt(index, x);
-        } else if (param == null) {
-            ps.setNull(index, NULL);
-        } else {
-            throw new SQLException("Unsupported parameter type: " + param.getClass());
         }
     }
 
