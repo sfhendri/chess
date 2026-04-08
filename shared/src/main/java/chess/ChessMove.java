@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -16,14 +17,38 @@ public class ChessMove {
 
     public ChessMove(ChessPosition startPosition, ChessPosition endPosition,
                      ChessPiece.PieceType promotionPiece) {
-        if (startPosition == null || endPosition == null){
-            throw new IllegalArgumentException("You Can't have start and end be null silly");
-        }
-
         this.startPosition = startPosition;
         this.endPosition = endPosition;
         this.promotionPiece = promotionPiece;
     }
+
+
+    public ChessMove(String notation) throws Exception {
+        notation = notation.toLowerCase(Locale.ROOT);
+        if (notation.length() >= 4) {
+            int colStart = notation.charAt(0) - 'a' + 1;
+            int rowStart = notation.charAt(1) - '1' + 1;
+            int colEnd = notation.charAt(2) - 'a' + 1;
+            int rowEnd = notation.charAt(3) - '1' + 1;
+
+            startPosition = new ChessPosition(rowStart, colStart);
+            endPosition = new ChessPosition(rowEnd, colEnd);
+            if (notation.length() == 5) {
+                promotionPiece = switch (notation.charAt(4)) {
+                    case 'q' -> ChessPiece.PieceType.QUEEN;
+                    case 'b' -> ChessPiece.PieceType.BISHOP;
+                    case 'n' -> ChessPiece.PieceType.KNIGHT;
+                    case 'r' -> ChessPiece.PieceType.ROOK;
+                    default -> null;
+                };
+            } else {
+                promotionPiece = null;
+            }
+            return;
+        }
+        throw new Exception("Invalid move notation");
+    }
+
 
     /**
      * @return ChessPosition of starting location
@@ -51,23 +76,18 @@ public class ChessMove {
 
     @Override
     public String toString() {
-        return "ChessMove{" +
-                "startPosition=" + startPosition +
-                ", endPosition=" + endPosition +
-                ", promotionPiece=" + promotionPiece +
-                '}';
+        return String.format("%s%s", startPosition, endPosition);
     }
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ChessMove chessMove)) {
             return false;
         }
-        ChessMove chessMove = (ChessMove) o;
-        return Objects.equals(startPosition,
-                chessMove.startPosition)
-                && Objects.equals(endPosition, chessMove.endPosition)
-                && promotionPiece == chessMove.promotionPiece;
+        return Objects.equals(startPosition, chessMove.startPosition) && Objects.equals(endPosition, chessMove.endPosition) && promotionPiece == chessMove.promotionPiece;
     }
 
     @Override

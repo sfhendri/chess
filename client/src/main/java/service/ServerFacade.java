@@ -1,12 +1,15 @@
 package service;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import com.google.gson.Gson;
 import model.AuthData;
 import model.GameData;
 
 import java.net.URI;
-import java.net.http.*;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,10 +17,12 @@ public class ServerFacade {
 
     private final String serverUrl;
     private final HttpClient httpClient;
+    private final WebSocketFacade webSocket;
 
-    public ServerFacade(String url) {
+    public ServerFacade(String url, MessageObserver messageObserver) throws Exception {
         serverUrl = url;
         httpClient = HttpClient.newHttpClient();
+        webSocket = new WebSocketFacade(serverUrl, messageObserver);
     }
 
 
@@ -51,29 +56,26 @@ public class ServerFacade {
         return (response != null ? response.games : new GameData[0]);
     }
 
-    public GameData joinGame(String authToken, int gameID, ChessGame.TeamColor color) throws Exception {
-        // Ensure a color is specified
-        if (color == null) {
-            throw new Exception("Color must be specified");
-        }
-
-        // Create a request using the enum directly (no String conversion needed)
-        JoinGameRequest request = new JoinGameRequest(color, gameID);
-
-        // Send the PUT request to the server and get the updated game data
-
-        // Return the GameData directly — no need to call getGame separately
-        return this.makeRequest("PUT", "/game", request, authToken, GameData.class);
+    public void joinGame(String authToken, int gameID, ChessGame.TeamColor color) throws Exception {
+        var request = new JoinGameRequest(color, gameID);
+        this.makeRequest("PUT", "/game", request, authToken, GameData.class);
+        webSocket.connect(authToken, gameID);
     }
 
-    private GameData getGame(String authToken, int gameID) throws Exception {
-        var games = listGames(authToken);
-        for (var game : games) {
-            if (game.gameID() == gameID) {
-                return game;
-            }
-        }
-        throw new Exception("Missing game");
+    public void observeGame(String authToken, int gameID) throws Exception {
+        webSocket.connect(authToken, gameID);
+    }
+
+    public void makeMove(String authToken, int gameID, ChessMove move) throws Exception {
+        webSocket.makeMove(authToken, gameID, move);
+    }
+
+    public void leave(String authToken, int gameID) throws Exception {
+        webSocket.leave(authToken, gameID);
+    }
+
+    public void resign(String authToken, int gameID) throws Exception {
+        webSocket.resign(authToken, gameID);
     }
 
     private <T> T makeRequest(String method, String path, Object requestBody, String authToken, Class<T> clazz) throws Exception {

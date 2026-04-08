@@ -1,53 +1,79 @@
 package ui;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import chess.ChessPosition;
 import model.AuthData;
 import model.GameData;
+import service.MessageObserver;
 import service.ServerFacade;
 import utilities.StringUtilities;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 import static ui.EscapeSequences.*;
 
-public class ChessClient {
+public class ChessClient implements MessageObserver {
     final private ServerFacade server;
-    private State userState = State.LOGGED_OUT;
+    private State playerState = State.LOGGED_OUT;
     private String authToken;
-    private GameData gameData;
+    private GameData currentGame;
     private List<GameData> games = new ArrayList<>();
 
-    public ChessClient() throws Exception {
-        server = new ServerFacade("http://localhost:8080");
+    record CommandInfo(String name, Command cmd, String syntax, String description) {
+    }
+
+    interface Command {
+        String invoke(String[] params) throws Exception;
+    }
+
+    private final Map<String, CommandInfo> commands = new HashMap<>();
+
+    public ChessClient(String serverUrl) throws Exception {
+        server = new ServerFacade(serverUrl, this);
+
+        final CommandInfo[] commandList = {
+                new CommandInfo("help", this::help, "help", "with possible commands"),
+                new CommandInfo("quit", this::quit, "quit", "playing chess"),
+                new CommandInfo("login", this::login, "login <USERNAME> <PASSWORD>", "to play chess"),
+                new CommandInfo("register", this::register, "register <USERNAME> <PASSWORD> <EMAIL>", "to create an account"),
+                new CommandInfo("logout", this::logout, "logout", "when you are done"),
+                new CommandInfo("create", this::create, "create <NAME>", "a game"),
+                new CommandInfo("list", this::list, "list", "games"),
+                new CommandInfo("join", this::join, "join <POSITION> [WHITE|BLACK]", "a game"),
+                new CommandInfo("observe", this::observe, "observe <ID>", "a game"),
+                new CommandInfo("redraw", this::redraw, "redraw", "the board"),
+                new CommandInfo("legal", this::legal, "legal", "moves for the current board"),
+                new CommandInfo("move", this::move, "move <crcr> [q|r|b|n]", "a piece with optional promotion"),
+                new CommandInfo("leave", this::leave, "leave", "the game"),
+                new CommandInfo("resign", this::resign, "resign", "the game without leaving it")
+        };
+
+        for (var cmd : commandList) {
+            commands.put(cmd.name(), cmd);
+        }
     }
 
     public void run() {
         System.out.println("👑 Welcome to 240 chess. Type Help to get started. 👑");
         Scanner scanner = new Scanner(System.in);
 
-        var result = "";
-        while (!result.equals("quit")) {
+        var keepRunning = true;
+        while (keepRunning) {
             printPrompt();
             String input = scanner.nextLine();
 
-            try {
-                result = eval(input);
-                System.out.printf("%s%s\n", RESET_TEXT_COLOR, result);
-            } catch (Throwable e) {
-                System.out.println(e.getMessage());
-            }
+            keepRunning = eval(input);
         }
 
     }
 
     private void printPrompt() {
-
+        System.out.printf("%s[%s]>%s ", SET_TEXT_COLOR_GREEN, playerState, RESET_TEXT_COLOR);
     }
 
-    private String eval(String input) {
-        var result = "Error with command. Try: Help";
+    private boolean eval(String input) {
+        CommandInfo cmdInfo = null;
         try {
             input = input.toLowerCase();
             var tokens = input.split(" ");
@@ -56,82 +82,98 @@ public class ChessClient {
             }
 
             var params = Arrays.copyOfRange(tokens, 1, tokens.length);
-            try {
-                result = (String) this.getClass().getDeclaredMethod(tokens[0], String[].class).invoke(this, new Object[]{params});
-            } catch (NoSuchMethodException e) {
-                result = String.format("Unknown command\n%s", help(params));
+            cmdInfo = commands.get(tokens[0]);
+            if (cmdInfo == null) {
+                cmdInfo = commands.get("help");
             }
-        } catch (InvocationTargetException e) {
-            result = e.getCause().getMessage();
+
+            String result = cmdInfo.cmd.invoke(params);
+            System.out.printf("%s%s\n", RESET_TEXT_COLOR, result);
         } catch (Throwable e) {
-            result = e.getMessage();
+            System.out.printf("%s%s\n", RESET_TEXT_COLOR, e.getMessage());
         }
-        return result;
+        return cmdInfo == null || !cmdInfo.name.equals("quit");
     }
 
 
-    private String help(String[] params) {
-        return switch (userState) {
-            case LOGGED_IN -> getHelp(LOGGEDINHELP);
-            case OBSERVING -> getHelp(OBSERVINGHELP);
-            case BLACK, WHITE -> getHelp(PLAYINGHELP);
-            default -> getHelp(LOGGEDOUTHELP);
+    private String help(String[] ignoredParams) {
+        final List<String> loggedOutHelp = List.of("register", "login", "quit", "help");
+        final List<String> loggedInHelp = List.of("create", "list", "join", "observe", "logout", "quit", "help");
+        final List<String> observingHelp = List.of("legal", "redraw", "leave", "quit", "help");
+        final List<String> playingHelp = List.of("redraw", "leave", "move", "resign", "legal", "quit", "help");
+
+        return switch (playerState) {
+            case LOGGED_IN -> getHelp(loggedInHelp);
+            case OBSERVING -> getHelp(observingHelp);
+            case BLACK, WHITE -> getHelp(playingHelp);
+            default -> getHelp(loggedOutHelp);
         };
     }
 
-    @SuppressWarnings("unused")
-    private String quit(String[] params) {
-        return "quit";
+    private String getHelp(List<String> helpList) {
+        StringBuilder sb = new StringBuilder();
+        for (var helpItem : helpList) {
+            CommandInfo cmdInfo = commands.get(helpItem);
+            sb.append(String.format("  %s%s%s - %s%s%s\n", SET_TEXT_COLOR_BLUE, cmdInfo.syntax(), RESET_TEXT_COLOR, SET_TEXT_COLOR_MAGENTA, cmdInfo.description(), RESET_TEXT_COLOR));
+        }
+        return sb.toString();
     }
 
-    @SuppressWarnings("unused")
+
+    private String quit(String[] ignoredParams) {
+        return "Thanks for playing!";
+    }
+
+
     private String login(String[] params) throws Exception {
-        if (userState != State.LOGGED_OUT) {
-            return "Must be logged out";
+        if (playerState != State.LOGGED_OUT) {
+            return "Already logged in";
         }
         var username = getStringParam("username", params, 0);
         var password = getStringParam("password", params, 1);
 
         AuthData authData = server.login(username, password);
-        userState = State.LOGGED_IN;
+        playerState = State.LOGGED_IN;
         authToken = authData.authToken();
-        return String.format("Logged in as %s", username);
+        return String.format("Logged in as %s%n%n%s", username, list(params));
     }
 
     private String register(String[] params) throws Exception {
-        if (userState != State.LOGGED_OUT) {
-            return "Must be logged out";
+        if (playerState != State.LOGGED_OUT) {
+            return "Already logged in";
         }
         var username = getStringParam("username", params, 0);
         var password = getStringParam("password", params, 1);
         var email = getStringParam("email", params, 2);
 
         AuthData authData = server.register(username, password, email);
-        userState = State.LOGGED_IN;
+        playerState = State.LOGGED_IN;
         authToken = authData.authToken();
-        return String.format("Logged in as %s", username);
+        list(params);
+        return String.format("Registered in as %s%n%n%s", username, list(params));
     }
 
-    private String logout(String[] ignore) throws Exception {
-        verifyAuth();
+    private String logout(String[] ignoredParams) throws Exception {
+        verify(authenticated(), "Not logged in");
 
         server.logout(authToken);
-        userState = State.LOGGED_OUT;
+        playerState = State.LOGGED_OUT;
         authToken = null;
         return "Logged out";
     }
 
     private String create(String[] params) throws Exception {
-        verifyAuth();
-        var gameName = getStringParam("game name", params, 0);
+        verify(authenticated(), "Not logged in");
 
+        var gameName = getStringParam("game name", params, 0);
         server.createGame(authToken, gameName);
 
-        return String.format("Created %s", gameName);
+        return String.format("Created %s%n%s", gameName, list(params));
+
     }
 
-    private String list(String[] params) throws Exception {
-        verifyAuth();
+    private String list(String[] ignoredParams) throws Exception {
+        verify(authenticated(), "Not logged in");
 
         var gameList = server.listGames(authToken);
         games = Arrays.stream(gameList).toList();
@@ -140,8 +182,7 @@ public class ChessClient {
             int pos = 1;
             StringBuilder buf = new StringBuilder("Games:\n———————————————————————————————\n");
             for (var game : games) {
-                var gameText = String.format("%d. %s white:%s black:%s state: %s%n", pos,
-                        game.gameName(), game.whiteUsername(), game.blackUsername(), game.state());
+                var gameText = String.format("%d. %s%n", pos, game.display());
                 buf.append(gameText);
                 pos++;
             }
@@ -151,179 +192,124 @@ public class ChessClient {
         return "No games. Perhaps you would like to create one?";
     }
 
-
     private String join(String[] params) throws Exception {
-        verifyAuth();
+        verify(authenticated() && !playing() && !observing(), "Cannot join game if not logged in or already in a game");
 
-        // Get the game from the last listed games
-        var game = getGame(params, 0);
+        var game = getGame(params);
+        var color = getColor(params);
 
-        // Get the color the player wants to join as
-        var color = getColor(params, 1);
-
-        if (isPlaying() || isObserving()) {
-            throw new Exception("Already in game");
-        }
-
-        // Call the server facade to join the game and store the returned GameData
-        this.gameData = server.joinGame(authToken, game.gameID(), color);
-
-        // Set user state based on chosen color
-        userState = (color == ChessGame.TeamColor.WHITE ? State.WHITE : State.BLACK);
-
-        // Immediately draw the board from the perspective of the player
-        printGame(color, null);
+        server.joinGame(authToken, game.gameID(), color);
+        playerState = (color == ChessGame.TeamColor.WHITE ? State.WHITE : State.BLACK);
+        currentGame = game;
 
         return String.format("Joined %s as %s", game.gameName(), color);
     }
 
-
     private String observe(String[] params) throws Exception {
-        verifyAuth();
-        var game = getGame(params, 0);
-        if (isPlaying() || isObserving()) {
-            throw new Exception("Already in game");
-        }
+        verify(authenticated() && !playing() && !observing(), "Cannot join game if not logged in or already in a game");
 
-        this.gameData = new GameData(0, "", "", "", new ChessGame(), GameData.State.UNDECIDED);
-        userState = State.OBSERVING;
-        printGame();
-        return String.format("Joined as observer");
+        var game = getGame(params);
+        server.observeGame(authToken, game.gameID());
+        playerState = State.OBSERVING;
+        currentGame = game;
+
+        return String.format("Joined %s as observer", game.gameName());
     }
 
-
-    private String redraw(String[] params) throws Exception {
-        verifyAuth();
-        if (!isPlaying() && !isObserving()) {
-            throw new Exception("No game being played");
-        }
+    private String redraw(String[] ignoredParams) throws Exception {
+        verify(gameOver() || playing() || observing(), "Not in a game");
 
         printGame();
         return "";
     }
-
 
     private String legal(String[] params) throws Exception {
-        verifyAuth();
-        if (!isPlaying() && !isObserving()) {
-            throw new Exception("No game being played");
+        verify(gameOver() || playing() || observing(), "Not in a game");
+
+        var pos = new ChessPosition(params[0]);
+        var highlights = new ArrayList<ChessPosition>();
+        highlights.add(pos);
+        for (var move : currentGame.game().validMoves(pos)) {
+            highlights.add(move.getEndPosition());
         }
 
-        printGame();
+        printGame(highlights);
         return "";
     }
 
-
     private String move(String[] params) throws Exception {
-        verifyAuth();
-        if (!isPlaying()) {
-            throw new Exception("No game being played");
-        }
-        var move = getStringParam("move", params, 0);
-        return String.format("move %s", move);
+        verify(playing() && isMyTurn(), "Not your turn");
+
+        var move = new ChessMove(getStringParam("move", params, 0));
+        server.makeMove(authToken, currentGame.gameID(), move);
+        return String.format("moved %s", move);
     }
 
-    private String leave(String[] params) throws Exception {
-        if (!isPlaying() && !isObserving()) {
-            throw new Exception("No game being played");
-        }
+    private String leave(String[] ignoredParams) throws Exception {
+        verify(gameOver() || playing() || observing(), "Not in a game");
 
-        userState = State.LOGGED_IN;
-        gameData = null;
+        server.leave(authToken, currentGame.gameID());
+        playerState = State.LOGGED_IN;
+        currentGame = null;
         return "Left game";
     }
 
-    private String resign(String[] params) throws Exception {
-        if (!isPlaying() && !isObserving()) {
-            throw new Exception("No game being played");
-        }
+    private String resign(String[] ignoredParams) throws Exception {
+        verify(playing(), "Not playing a game");
 
-        userState = State.LOGGED_IN;
-        gameData = null;
-        return "Left game";
+        server.resign(authToken, currentGame.gameID());
+        playerState = State.LOGGED_IN;
+        currentGame = null;
+        return "Resigned game";
     }
 
-
-    private record Help(String cmd, String description) {
+    @Override
+    public void notify(String message) {
+        System.out.printf("%n%s[NOTIFICATION] %s%s%n", SET_TEXT_COLOR_BLUE, message, RESET_TEXT_COLOR);
+        printPrompt();
     }
 
-    static final List<Help> LOGGEDOUTHELP = List.of(
-            new Help("register <USERNAME> <PASSWORD> <EMAIL>", "to create an account"),
-            new Help("login <USERNAME> <PASSWORD>", "to play chess"),
-            new Help("quit", "playing chess"),
-            new Help("help", "with possible commands")
-    );
-
-    static final List<Help> LOGGEDINHELP = List.of(
-            new Help("create <NAME>", "a game"),
-            new Help("list", "games"),
-            new Help("join <POSITION> [WHITE|BLACK]", "a game"),
-            new Help("observe <ID>", "a game"),
-            new Help("logout", "when you are done"),
-            new Help("quit", "playing chess"),
-            new Help("help", "with possible commands")
-    );
-
-    static final List<Help> OBSERVINGHELP = List.of(
-            new Help("legal", "moves for the current board"),
-            new Help("redraw", "the board"),
-            new Help("leave", "the game"),
-            new Help("quit", "playing chess"),
-            new Help("help", "with possible commands")
-    );
-
-    static final List<Help> PLAYINGHELP = List.of(
-            new Help("redraw", "the board"),
-            new Help("leave", "the game"),
-            new Help("move <crcr> [q|r|b|n]", "a piece with optional promotion"),
-            new Help("resign", "the game without leaving it"),
-            new Help("legal <cr>", "moves for piece"),
-            new Help("quit", "playing chess"),
-            new Help("help", "with possible commands")
-    );
-
-    private String getHelp(List<Help> help) {
-        StringBuilder sb = new StringBuilder();
-        for (var me : help) {
-            sb.append(String.format("  %s%s%s - %s%s%s\n", SET_TEXT_COLOR_BLUE,
-                    me.cmd, RESET_TEXT_COLOR, SET_TEXT_COLOR_MAGENTA, me.description, RESET_TEXT_COLOR));
-        }
-        return sb.toString();
-
+    public void loadGame(GameData gameData) {
+        currentGame = gameData;
+        printGame();
+        printPrompt();
     }
 
-    private void verifyAuth() throws Exception {
-        if (userState == State.LOGGED_OUT || authToken == null) {
-            throw new Exception("Please login or register");
+    private void verify(boolean expected, String message) throws Exception {
+        if (!expected) {
+            throw new Exception(message);
         }
     }
 
-    public boolean isPlaying() {
-        return (gameData != null && (userState == State.WHITE || userState == State.BLACK) && !isGameOver());
+    private boolean authenticated() {
+        return (playerState != State.LOGGED_OUT && authToken != null);
+    }
+
+    public boolean playing() {
+        return (authenticated() && currentGame != null && (playerState == State.WHITE || playerState == State.BLACK) && !gameOver());
     }
 
 
-    public boolean isObserving() {
-        return (gameData != null && (userState == State.OBSERVING));
+    public boolean observing() {
+        return (authenticated() && currentGame != null && (playerState == State.OBSERVING));
     }
 
-    public boolean isGameOver() {
-        return (gameData != null && gameData.isGameOver());
+    public boolean gameOver() {
+        return (currentGame != null && currentGame.isGameOver());
     }
 
-    public boolean isTurn() {
-        return (isPlaying() && userState.isTurn(gameData.game().getTeamTurn()));
+    public boolean isMyTurn() {
+        return (playing() && playerState.isTurn(currentGame.game().getTeamTurn()));
     }
 
     private void printGame() {
-        var color = userState == State.BLACK ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
-        printGame(color, null);
+        printGame(null);
     }
 
-    private void printGame(ChessGame.TeamColor color, Collection<ChessPosition> highlights) {
-        System.out.println("\n");
-        System.out.print((gameData.game().getBoard()).toString(color, highlights));
-        System.out.println();
+    private void printGame(Collection<ChessPosition> highlights) {
+        var color = playerState == State.BLACK ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+        var gameText = (currentGame.game().getBoard()).toString(color, highlights);
+        System.out.printf("%n%s[GAME STATE] %s%n%n", gameText, currentGame.description());
     }
 
     private String getStringParam(String name, String[] params, int pos) throws Exception {
@@ -333,40 +319,35 @@ public class ChessClient {
         return params[pos];
     }
 
-    private int getIntParam(String[] params) throws Exception {
-        if (params.length == 0) {
-            throw new Exception(String.format("Missing %s parameter", "game Pos"));
-        }
-
-        var result = StringUtilities.tryParseInt(params[0]);
-        if (result.isEmpty()) {
-            throw new Exception(String.format("Parameter %s is not an int", "game Pos"));
-        }
-        return result.getAsInt();
-    }
-
-    private GameData getGame(String[] params, int pos) throws Exception {
-        var gamePos = getIntParam(params) - 1;
-        if (gamePos < 0 || gamePos >= games.size()) {
+    private GameData getGame(String[] params) throws Exception {
+        var gamePos = getGamePos(params) - 1;
+        if (gamePos >= 0 && gamePos >= games.size()) {
             throw new Exception("invalid game requested");
         }
 
         return games.get(gamePos);
     }
 
-    private ChessGame.TeamColor getColor(String[] params, int pos) throws Exception {
-        if (params.length <= pos || params[pos] == null || params[pos].isBlank()) {
-            throw new Exception("Missing color parameter (must be WHITE or BLACK)");
+
+    private int getGamePos(String[] params) throws Exception {
+        if (params.length == 0) {
+            throw new Exception("Missing game pos parameter");
         }
 
-        var colorText = params[pos].toUpperCase();
+        var result = StringUtilities.tryParseInt(params[0]);
+        if (result.isEmpty()) {
+            throw new Exception("Parameter game pos is not an int");
+        }
+        return result.getAsInt();
+    }
+
+    private ChessGame.TeamColor getColor(String[] params) throws Exception {
+        var colorText = getStringParam("color", params, 1).toUpperCase();
         if (!colorText.equals("WHITE") && !colorText.equals("BLACK")) {
-            throw new Exception("Color must be WHITE or BLACK");
+            throw new Exception("color must be black or white");
         }
         return ChessGame.TeamColor.valueOf(colorText);
     }
-
 }
-
 
 
