@@ -59,15 +59,15 @@ public class MySqlDataAccess implements DataAccess {
         var game = new ChessGame();
         game.board.resetBoard();
         var state = GameData.State.UNDECIDED;
-        var ID = executeUpdate("INSERT INTO `game` (gameName, whitePlayerName, blackPlayerName, game, state, description) VALUES (?, ?, ?, ?, ?, ?)",
+        var id = executeUpdate("INSERT INTO `game` (gameName, whitePlayerName, blackPlayerName, game, state, description) VALUES (?, ?, ?, ?, ?, ?)",
                 gameName,
                 null,
                 null,
                 game.toString(),
                 state.toString(),
                 "Game created");
-        if (ID != 0) {
-            return new GameData(ID, null, null, gameName, game, state, "Game created");
+        if (id != 0) {
+            return new GameData(id, null, null, gameName, game, state, "Game created");
         }
 
         return null;
@@ -75,7 +75,8 @@ public class MySqlDataAccess implements DataAccess {
 
     public GameData getGame(int gameID) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            try (var preparedStatement = conn.prepareStatement("SELECT gameID, gameName, whitePlayerName, blackPlayerName, game, state, description FROM `game` WHERE gameID=?")) {
+            try (var preparedStatement = conn.prepareStatement("SELECT gameID, gameName, whitePlayerName, blackPlayerName, " +
+                    "game, state, description FROM `game` WHERE gameID=?")) {
                 preparedStatement.setInt(1, gameID);
                 try (var rs = preparedStatement.executeQuery()) {
                     if (rs.next()) {
@@ -93,7 +94,8 @@ public class MySqlDataAccess implements DataAccess {
     public Collection<GameData> listGames() throws DataAccessException {
         var result = new ArrayList<GameData>();
         try (var conn = DatabaseManager.getConnection()) {
-            try (var preparedStatement = conn.prepareStatement("SELECT gameID, gameName, whitePlayerName, blackPlayerName, game, state, description FROM `game` ORDER BY state DESC")) {
+            try (var preparedStatement = conn.prepareStatement("SELECT gameID, gameName, whitePlayerName, " +
+                    "blackPlayerName, game, state, description FROM `game` ORDER BY state DESC")) {
                 try (var rs = preparedStatement.executeQuery()) {
                     while (rs.next()) {
                         var gameData = readGameData(rs);
@@ -225,8 +227,7 @@ public class MySqlDataAccess implements DataAccess {
                     switch (param) {
                         case String s -> preparedStatement.setString(i + 1, s);
                         case Integer x -> preparedStatement.setInt(i + 1, x);
-                        case null -> preparedStatement.setNull(i + 1, NULL);
-                        default -> {
+                        case null -> preparedStatement.setNull(i + 1, NULL); default -> {
                         }
                     }
                 }

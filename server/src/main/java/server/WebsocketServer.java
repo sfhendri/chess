@@ -65,7 +65,8 @@ public class WebsocketServer {
         var gameData = moveInfo.gameData();
         connections.broadcast(gameData.gameID(), "", new LoadMessage(gameData));
 
-        var moveNotification = new NotificationMessage(String.format("%s moved %s. %s's turn.", moveInfo.username(), command.getMove(), gameData.game().getTeamTurn()));
+        var moveNotification = new NotificationMessage(String.format("%s moved %s. %s's turn.",
+                moveInfo.username(), command.getMove(), gameData.game().getTeamTurn()));
         connections.broadcast(gameData.gameID(), ctx.sessionId(), moveNotification);
 
         if (gameData.state() != GameData.State.UNDECIDED) {

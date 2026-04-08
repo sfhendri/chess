@@ -69,7 +69,8 @@ public record GameData(int gameID, String whiteUsername, String blackUsername, S
     }
 
     public String display() {
-        return String.format("%s white:%s black:%s state:%s. description: %s", name(gameName), name(whiteUsername), name(blackUsername), state, description);
+        return String.format("%s white:%s black:%s state:%s. description: %s",
+                name(gameName), name(whiteUsername), name(blackUsername), state, description);
 
     }
 
