@@ -349,5 +349,3 @@ public class ChessClient implements MessageObserver {
         return ChessGame.TeamColor.valueOf(colorText);
     }
 }
-
-
